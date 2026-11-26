@@ -1,10 +1,10 @@
-# Node.js Team Setup Guide
+# Prometheus Node Exporter Setup Guide
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-LTS-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Platforms](https://img.shields.io/badge/Platforms-Linux%20%7C%20Windows-blue)](#installation)
+[![Prometheus](https://img.shields.io/badge/Prometheus-Node%20Exporter-E6522C?logo=prometheus&logoColor=white)](https://github.com/prometheus/node_exporter)
+[![Platform](https://img.shields.io/badge/Platform-Linux-blue)](#installation-linux)
 
-A cross-platform guide for installing and configuring **Node.js** and **npm** on Linux and Windows, so every developer on the team works in a consistent, reproducible environment.
+A step-by-step guide to installing, running, and connecting **Prometheus Node Exporter** to a Prometheus server for host-level monitoring.
 
 ---
 
@@ -12,15 +12,15 @@ A cross-platform guide for installing and configuring **Node.js** and **npm** on
 
 - [Overview](#overview)
 - [Prerequisites](#prerequisites)
-- [Installation](#installation)
-  - [Linux](#linux)
-  - [Windows](#windows)
-- [Verify Installation](#verify-installation)
-- [Quick Start: Your First Project](#quick-start-your-first-project)
-- [Working with an Existing Repository](#working-with-an-existing-repository)
-- [Useful npm Commands](#useful-npm-commands)
+- [Installation (Linux)](#installation-linux)
+- [Verify the Installation](#verify-the-installation)
+- [Connect to Prometheus](#connect-to-prometheus)
+- [Configuration](#configuration)
+- [Docker (Optional)](#docker-optional)
+- [Windows](#windows)
+- [Upgrade](#upgrade)
+- [Uninstall](#uninstall)
 - [Troubleshooting](#troubleshooting)
-- [Team Development Standards](#team-development-standards)
 - [Official Resources](#official-resources)
 - [Contributing](#contributing)
 - [License](#license)
@@ -29,410 +29,285 @@ A cross-platform guide for installing and configuring **Node.js** and **npm** on
 
 ## Overview
 
-**Node.js** is a JavaScript runtime that lets you run JavaScript outside the browser.
-**npm** (Node Package Manager) ships with Node.js and is used to install, manage, and share project dependencies.
+[Node Exporter](https://github.com/prometheus/node_exporter) is a Prometheus exporter for hardware and OS metrics exposed by \*NIX kernels. It runs on each host you want to monitor and exposes metrics over HTTP, which a Prometheus server scrapes on a schedule.
 
-This guide covers:
+Typical metrics include:
 
-- Installing Node.js on Linux and Windows
-- Managing multiple Node.js versions
-- Verifying your installation
-- Creating and running a Node.js project
-- Installing dependencies for existing projects
-- Following consistent team development practices
+- CPU usage and load average
+- Memory and swap
+- Disk space and disk I/O
+- Network traffic
+- Filesystem and system information
+
+| Item | Value |
+| --- | --- |
+| Default port | `9100` |
+| Metrics endpoint | `http://<host>:9100/metrics` |
+| Supported systems | Linux and other \*NIX systems |
+
+> **Note:** Node Exporter is a standalone Go binary. It is unrelated to Node.js and does not require Node.js to be installed.
 
 ## Prerequisites
 
-Before you begin, make sure you have:
-
-- An active internet connection
-- Administrator privileges (Windows) or `sudo` access (Linux)
-- A terminal application:
-  - **Linux:** Terminal
-  - **Windows:** PowerShell or Windows Terminal
-- [Git](https://git-scm.com/doc) (recommended)
+- A Linux host with `systemd`
+- `sudo` or root access
+- Outbound internet access to download the release (or a way to copy the binary to the host)
+- A running Prometheus server that can reach the host on port `9100`
 
 ---
 
-## Installation
+## Installation (Linux)
 
-### Linux
+> Check the [Prometheus downloads page](https://prometheus.io/download/#node_exporter) for the latest release and set `VERSION` accordingly. Use `arm64` instead of `amd64` on ARM hosts.
 
-| Method | Best for |
-| --- | --- |
-| [NVM](#option-1-nvm-recommended) | Development environments, multiple Node.js versions (**recommended**) |
-| [APT](#option-2-apt) | Quick setup on Ubuntu/Debian-based distributions |
-
-#### Option 1: NVM (Recommended)
-
-[NVM](https://github.com/nvm-sh/nvm) (Node Version Manager) lets you install and switch between Node.js versions without administrator privileges.
-
-1. **Install NVM** (see the [official instructions](https://github.com/nvm-sh/nvm) for the latest version):
-
-   ```bash
-   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
-   ```
-
-   Then restart your terminal or reload your shell configuration:
-
-   ```bash
-   # Bash
-   source ~/.bashrc
-
-   # Zsh
-   source ~/.zshrc
-   ```
-
-2. **Verify NVM:**
-
-   ```bash
-   nvm --version
-   ```
-
-3. **Install the latest LTS release:**
-
-   ```bash
-   nvm install --lts
-   ```
-
-4. **Activate it:**
-
-   ```bash
-   nvm use --lts
-   ```
-
-5. **Set it as the default:**
-
-   ```bash
-   nvm alias default 'lts/*'
-   ```
-
-6. **Verify Node.js and npm:**
-
-   ```bash
-   node --version
-   npm --version
-   ```
-
-#### Option 2: APT
-
-Suitable for Ubuntu and Debian-based distributions.
+### 1. Download and install the binary
 
 ```bash
-sudo apt update
-sudo apt install -y nodejs npm
+VERSION="1.12.0"
+ARCH="amd64"
 
-node --version
-npm --version
+cd /tmp
+wget https://github.com/prometheus/node_exporter/releases/download/v${VERSION}/node_exporter-${VERSION}.linux-${ARCH}.tar.gz
+tar xzf node_exporter-${VERSION}.linux-${ARCH}.tar.gz
+sudo install -m 0755 node_exporter-${VERSION}.linux-${ARCH}/node_exporter /usr/local/bin/
 ```
 
-> **Note:** APT repositories may ship an older Node.js version. If your project requires a specific or recent LTS release, use NVM instead.
+### 2. Create a dedicated user
 
----
-
-### Windows
-
-| Method | Best for |
-| --- | --- |
-| [Official Installer](#option-1-official-installer-recommended-for-beginners) | Beginners (**recommended**) |
-| [Winget](#option-2-winget) | Command-line installation |
-| [NVM for Windows](#option-3-nvm-for-windows) | Switching between multiple Node.js versions |
-
-#### Option 1: Official Installer (Recommended for Beginners)
-
-1. Visit [nodejs.org](https://nodejs.org/) and download the **LTS** installer (`.msi`) for your system architecture.
-2. Run the installer and:
-   - Accept the license agreement
-   - Choose an installation directory
-   - Keep the default options
-   - Ensure Node.js is added to the system `PATH`
-3. Open PowerShell or Command Prompt and verify:
-
-   ```powershell
-   node --version
-   npm --version
-   ```
-
-#### Option 2: Winget
-
-Using the Windows Package Manager, run in PowerShell:
-
-```powershell
-winget install OpenJS.NodeJS.LTS
-```
-
-Restart your terminal, then verify:
-
-```powershell
-node --version
-npm --version
-```
-
-#### Option 3: NVM for Windows
-
-> **Important:** [NVM for Windows](https://github.com/coreybutler/nvm-windows) is a separate project from NVM for Linux/macOS, and its commands differ slightly.
-
-1. Download the latest `nvm-setup.exe` from the [releases page](https://github.com/coreybutler/nvm-windows).
-2. Run the installer with the default settings, then open a **new** PowerShell window.
-3. Verify NVM:
-
-   ```powershell
-   nvm version
-   ```
-
-4. Install and activate the LTS release:
-
-   ```powershell
-   nvm install lts
-   nvm use lts
-   ```
-
-5. Verify Node.js and npm:
-
-   ```powershell
-   node --version
-   npm --version
-   ```
-
----
-
-## Verify Installation
-
-On any operating system, run:
+Run the service as an unprivileged user with no login shell:
 
 ```bash
-node --version
-npm --version
+sudo useradd --no-create-home --shell /usr/sbin/nologin node_exporter
 ```
 
-Example output (versions will vary with your installed release):
+### 3. Create the systemd service
 
-```text
-v24.x.x
-11.x.x
+Create `/etc/systemd/system/node_exporter.service`:
+
+```ini
+[Unit]
+Description=Prometheus Node Exporter
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+ExecStart=/usr/local/bin/node_exporter
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
 ```
 
-To check where Node.js is installed:
+### 4. Start and enable the service
 
 ```bash
-# Linux
-which node
-which npm
+sudo systemctl daemon-reload
+sudo systemctl enable --now node_exporter
+systemctl status node_exporter
 ```
 
-```powershell
-# Windows PowerShell
-where.exe node
-where.exe npm
+### 5. Clean up
+
+```bash
+rm -rf /tmp/node_exporter-${VERSION}.linux-${ARCH}*
 ```
 
 ---
 
-## Quick Start: Your First Project
+## Verify the Installation
 
-1. **Create a project directory:**
+Confirm the service is running and serving metrics:
 
-   ```bash
-   mkdir nodejs-test
-   cd nodejs-test
-   ```
+```bash
+systemctl is-active node_exporter
+curl -s http://localhost:9100/metrics | head
+```
 
-2. **Initialize an npm project** (creates a `package.json`):
-
-   ```bash
-   npm init -y
-   ```
-
-3. **Create `index.js`:**
-
-   ```javascript
-   console.log("Node.js is working correctly!");
-   ```
-
-4. **Run it:**
-
-   ```bash
-   node index.js
-   ```
-
-   Expected output:
-
-   ```text
-   Node.js is working correctly!
-   ```
-
-Your Node.js environment is ready. 🎉
+You should see lines such as `# HELP node_cpu_seconds_total ...` followed by metric values.
 
 ---
 
-## Working with an Existing Repository
+## Connect to Prometheus
 
-1. **Clone the repository:**
+On your Prometheus server, add a scrape job to `prometheus.yml`:
 
-   ```bash
-   git clone <repository-url>
-   ```
+```yaml
+scrape_configs:
+  - job_name: "node"
+    static_configs:
+      - targets:
+          - "<server-1-ip>:9100"
+          - "<server-2-ip>:9100"
+```
 
-2. **Navigate to the project directory:**
+Reload or restart Prometheus, then open **Status → Targets** in the Prometheus UI and confirm each target shows as `UP`.
 
-   ```bash
-   cd <project-directory>
-   ```
+Quick check with a PromQL query:
 
-3. **Install dependencies:**
+```promql
+up{job="node"}
+```
 
-   ```bash
-   npm ci        # if a package-lock.json exists (recommended)
-   # or
-   npm install
-   ```
-
-   | Command | Behavior |
-   | --- | --- |
-   | `npm ci` | Installs exactly what the lockfile specifies. Recommended for CI and reproducible team setups. |
-   | `npm install` | Installs dependencies and may update the lockfile. |
-
-4. **Run the project.** Check the `scripts` section of `package.json`, for example:
-
-   ```json
-   {
-     "scripts": {
-       "start": "node index.js",
-       "dev": "node --watch index.js"
-     }
-   }
-   ```
-
-   ```bash
-   npm start      # run the application
-   npm run dev    # start the development environment
-   ```
-
-   Available commands depend on each project's configuration.
+> **Security:** Node Exporter exposes detailed system information and has no authentication by default. Restrict port `9100` in your firewall so that only the Prometheus server can reach it.
+>
+> Example with `ufw`:
+>
+> ```bash
+> sudo ufw allow from <prometheus-ip> to any port 9100 proto tcp
+> ```
 
 ---
 
-## Useful npm Commands
+## Configuration
 
-| Command | Description |
+Node Exporter is configured with command-line flags, set on the `ExecStart` line of the systemd unit. After any change, run:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart node_exporter
+```
+
+Common examples:
+
+| Goal | Flag |
 | --- | --- |
-| `npm init -y` | Initialize a new project |
-| `npm install` | Install project dependencies |
-| `npm ci` | Clean install from the lockfile |
-| `npm install <package>` | Install a package |
-| `npm install -D <package>` | Install a development dependency |
-| `npm uninstall <package>` | Remove a package |
-| `npm update` | Update dependencies within allowed version ranges |
-| `npm list` | Display installed packages |
-| `npm run` | List available scripts |
-| `npm start` | Execute the `start` script |
-| `npm run dev` | Execute the `dev` script |
+| Change the listen address or port | `--web.listen-address=":9100"` |
+| Enable an optional collector | `--collector.<name>` (for example `--collector.systemd`) |
+| Disable a default collector | `--no-collector.<name>` |
+| Expose custom metrics from files | `--collector.textfile.directory=/var/lib/node_exporter/textfile` |
+
+See all available options and collectors:
+
+```bash
+node_exporter --help
+```
+
+> Some collectors are disabled by default because of high cardinality or long run times, so enable extra collectors with care.
+
+---
+
+## Docker (Optional)
+
+Node Exporter is designed to monitor the host, so a container needs extra flags to see the host rather than itself. A native install is simpler and more accurate. If you need a container:
+
+```bash
+docker run -d \
+  --name node_exporter \
+  --net="host" \
+  --pid="host" \
+  --restart unless-stopped \
+  -v "/:/host:ro,rslave" \
+  quay.io/prometheus/node-exporter:latest \
+  --path.rootfs=/host
+```
+
+Docker Compose equivalent:
+
+```yaml
+services:
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter
+    command:
+      - "--path.rootfs=/host"
+    network_mode: host
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - "/:/host:ro,rslave"
+```
+
+---
+
+## Windows
+
+Node Exporter targets \*NIX systems. For Windows hosts, use [`windows_exporter`](https://github.com/prometheus-community/windows_exporter) instead:
+
+1. Download the `.msi` installer from the releases page.
+2. Run the installer and complete the wizard.
+3. Add the host to your Prometheus scrape config (the default port is `9182`).
+
+---
+
+## Upgrade
+
+```bash
+VERSION="<new-version>"
+ARCH="amd64"
+
+cd /tmp
+wget https://github.com/prometheus/node_exporter/releases/download/v${VERSION}/node_exporter-${VERSION}.linux-${ARCH}.tar.gz
+tar xzf node_exporter-${VERSION}.linux-${ARCH}.tar.gz
+
+sudo systemctl stop node_exporter
+sudo install -m 0755 node_exporter-${VERSION}.linux-${ARCH}/node_exporter /usr/local/bin/
+sudo systemctl start node_exporter
+
+node_exporter --version
+```
+
+## Uninstall
+
+```bash
+sudo systemctl disable --now node_exporter
+sudo rm /etc/systemd/system/node_exporter.service
+sudo systemctl daemon-reload
+sudo rm /usr/local/bin/node_exporter
+sudo userdel node_exporter
+```
 
 ---
 
 ## Troubleshooting
 
 <details>
-<summary><strong>1. <code>node</code> command not found</strong></summary>
+<summary><strong>Target shows as DOWN in Prometheus</strong></summary>
 
-**Linux (NVM):** reload your shell configuration and confirm NVM is available.
-
-```bash
-source ~/.bashrc    # or: source ~/.zshrc
-nvm --version
-```
-
-**Windows:**
-
-- Restart PowerShell or Command Prompt
-- Verify Node.js is included in the system `PATH`
-- Check the installation directory
-- Restart Windows if necessary
+- Confirm the service is running: `systemctl status node_exporter`
+- Test locally: `curl http://localhost:9100/metrics`
+- Test from the Prometheus server: `curl http://<host>:9100/metrics`
+- Check firewall and cloud security-group rules for port `9100`
+- Verify the target address in `prometheus.yml`
 
 </details>
 
 <details>
-<summary><strong>2. npm permission errors on Linux</strong></summary>
+<summary><strong>Service fails to start</strong></summary>
 
-If you installed Node.js with NVM, **do not use `sudo` with npm commands**. NVM installs Node.js and npm in your user directory. Confirm your installation paths:
+View the logs:
 
 ```bash
-which node
-which npm
+journalctl -u node_exporter -e --no-pager
 ```
+
+Common causes: wrong binary path in `ExecStart`, a missing `node_exporter` user, or a typo in a flag.
 
 </details>
 
 <details>
-<summary><strong>3. Managing multiple Node.js versions</strong></summary>
+<summary><strong>Port 9100 already in use</strong></summary>
 
-**Linux/macOS (NVM):**
+Find the process using the port:
 
 ```bash
-nvm list                 # list installed versions
-nvm install 22           # install another version
-nvm use 22               # switch versions
-nvm alias default 22     # set the default
+sudo ss -tulpn | grep 9100
 ```
 
-**Windows (NVM for Windows):**
-
-```powershell
-nvm list
-nvm install 22
-nvm use 22
-```
+Either stop that process or change the port with `--web.listen-address`.
 
 </details>
 
 <details>
-<summary><strong>4. Port already in use</strong></summary>
+<summary><strong>"Permission denied" or exec format error</strong></summary>
 
-Identify the process occupying the port (replace `3000` with your application's port).
-
-```bash
-# Linux
-sudo lsof -i :3000
-```
-
-```powershell
-# Windows PowerShell
-netstat -ano | findstr :3000
-```
+- Make sure the binary is executable: `sudo chmod +x /usr/local/bin/node_exporter`
+- Make sure you downloaded the right architecture (`uname -m`): `amd64` for x86_64, `arm64` for aarch64
+- On SELinux systems, restore the file context: `sudo restorecon -v /usr/local/bin/node_exporter`
 
 </details>
-
----
-
-## Team Development Standards
-
-To keep environments consistent across the team:
-
-1. **Use the same Node.js major version.** All team members should run the same major release.
-2. **Prefer LTS releases** for both development and production.
-3. **Commit dependency lockfiles.** Always commit `package.json` and `package-lock.json`.
-4. **Use `npm ci`** for fresh installs and CI/CD pipelines.
-5. **Pin the Node.js version** by adding an `.nvmrc` file to the project root with the agreed version, for example:
-
-   ```text
-   24
-   ```
-
-   Linux/macOS (NVM):
-
-   ```bash
-   nvm install
-   nvm use
-   ```
-
-   Windows (NVM for Windows):
-
-   ```powershell
-   nvm install 24
-   nvm use 24
-   ```
-
-6. **Document project scripts.** Keep clear scripts for development, testing, and production in `package.json`.
 
 ---
 
@@ -440,12 +315,11 @@ To keep environments consistent across the team:
 
 | Resource | Link |
 | --- | --- |
-| Node.js Website | https://nodejs.org/ |
-| Node.js Documentation | https://nodejs.org/docs/latest/api/ |
-| npm Documentation | https://docs.npmjs.com/ |
-| NVM (Linux/macOS) | https://github.com/nvm-sh/nvm |
-| NVM for Windows | https://github.com/coreybutler/nvm-windows |
-| Git Documentation | https://git-scm.com/doc |
+| Node Exporter (GitHub) | https://github.com/prometheus/node_exporter |
+| Prometheus Downloads | https://prometheus.io/download/ |
+| Prometheus Documentation | https://prometheus.io/docs/ |
+| Node Exporter Guide | https://prometheus.io/docs/guides/node-exporter/ |
+| Windows Exporter | https://github.com/prometheus-community/windows_exporter |
 
 ---
 
@@ -458,14 +332,8 @@ Contributions and suggestions are welcome! To improve this guide:
 3. Make your changes
 4. Submit a Pull Request
 
-Please keep installation instructions in line with the official Node.js documentation.
+Please keep instructions in line with the official Node Exporter documentation.
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
----
-
-<p align="center">
-  Maintained for developers who want a simple, consistent, and reliable Node.js environment across Linux and Windows.
-</p>
