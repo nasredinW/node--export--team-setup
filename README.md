@@ -1,537 +1,471 @@
-Node.js Team Setup Guide
+# Node.js Team Setup Guide
 
-A complete cross-platform installation and configuration guide for Node.js and npm on Linux and Windows.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-LTS-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Platforms](https://img.shields.io/badge/Platforms-Linux%20%7C%20Windows-blue)](#installation)
 
-This repository helps developers set up a consistent Node.js development environment quickly and correctly.
+A cross-platform guide for installing and configuring **Node.js** and **npm** on Linux and Windows, so every developer on the team works in a consistent, reproducible environment.
 
-Table of Contents
-Overview
-Prerequisites
-Linux Installation
-Option 1: Install using NVM (Recommended)
-Option 2: Install using APT
-Windows Installation
-Option 1: Official Installer
-Option 2: Install using Winget
-Option 3: Install using NVM for Windows
-Verify Installation
-Create Your First Node.js Project
-Install Project Dependencies
-Useful npm Commands
-Troubleshooting
-Team Development Standards
-Official Resources
-Overview
+---
 
-Node.js is a JavaScript runtime that allows developers to execute JavaScript outside the browser.
+## Table of Contents
 
-npm (Node Package Manager) is the default package manager distributed with Node.js. It helps developers install, manage, and share project dependencies.
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+  - [Linux](#linux)
+  - [Windows](#windows)
+- [Verify Installation](#verify-installation)
+- [Quick Start: Your First Project](#quick-start-your-first-project)
+- [Working with an Existing Repository](#working-with-an-existing-repository)
+- [Useful npm Commands](#useful-npm-commands)
+- [Troubleshooting](#troubleshooting)
+- [Team Development Standards](#team-development-standards)
+- [Official Resources](#official-resources)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Overview
+
+**Node.js** is a JavaScript runtime that lets you run JavaScript outside the browser.
+**npm** (Node Package Manager) ships with Node.js and is used to install, manage, and share project dependencies.
 
 This guide covers:
 
-Installing Node.js on Linux distributions.
-Installing Node.js on Windows.
-Managing Node.js versions.
-Verifying the installation.
-Creating and running a Node.js project.
-Installing project dependencies.
-Following consistent development practices.
-Prerequisites
+- Installing Node.js on Linux and Windows
+- Managing multiple Node.js versions
+- Verifying your installation
+- Creating and running a Node.js project
+- Installing dependencies for existing projects
+- Following consistent team development practices
 
-Before starting, make sure you have:
+## Prerequisites
 
-An active Internet connection.
-Administrator privileges on Windows or sudo access on Linux.
-A terminal application:
-Linux: Terminal.
-Windows: PowerShell or Windows Terminal.
-Git (recommended for development).
-Linux Installation
+Before you begin, make sure you have:
 
-There are two installation methods available.
+- An active internet connection
+- Administrator privileges (Windows) or `sudo` access (Linux)
+- A terminal application:
+  - **Linux:** Terminal
+  - **Windows:** PowerShell or Windows Terminal
+- [Git](https://git-scm.com/doc) (recommended)
 
-Option 1: Install using NVM (Recommended)
+---
 
-NVM (Node Version Manager) allows developers to install and manage multiple Node.js versions without requiring administrator privileges for normal version management.
+## Installation
 
-This is the recommended method for development environments.
+### Linux
 
-Step 1: Install NVM
+| Method | Best for |
+| --- | --- |
+| [NVM](#option-1-nvm-recommended) | Development environments, multiple Node.js versions (**recommended**) |
+| [APT](#option-2-apt) | Quick setup on Ubuntu/Debian-based distributions |
 
-Follow the official installation instructions:
+#### Option 1: NVM (Recommended)
 
-https://github.com/nvm-sh/nvm
+[NVM](https://github.com/nvm-sh/nvm) (Node Version Manager) lets you install and switch between Node.js versions without administrator privileges.
 
-Alternatively, use the official installation script:
+1. **Install NVM** (see the [official instructions](https://github.com/nvm-sh/nvm) for the latest version):
 
-bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
+   ```bash
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
+   ```
 
+   Then restart your terminal or reload your shell configuration:
 
-After installation, restart your terminal or load your shell configuration.
+   ```bash
+   # Bash
+   source ~/.bashrc
 
-For Bash:
+   # Zsh
+   source ~/.zshrc
+   ```
 
-bash
-source ~/.bashrc
+2. **Verify NVM:**
 
+   ```bash
+   nvm --version
+   ```
 
-For Zsh:
+3. **Install the latest LTS release:**
 
-bash
-source ~/.zshrc
+   ```bash
+   nvm install --lts
+   ```
 
-Step 2: Verify NVM
-bash
-nvm --version
+4. **Activate it:**
 
-Step 3: Install the latest Node.js LTS version
-bash
-nvm install --lts
+   ```bash
+   nvm use --lts
+   ```
 
-Step 4: Activate the LTS version
-bash
-nvm use --lts
+5. **Set it as the default:**
 
-Step 5: Set the default Node.js version
-bash
-nvm alias default 'lts/*'
+   ```bash
+   nvm alias default 'lts/*'
+   ```
 
-Step 6: Verify Node.js and npm
-bash
-node --version
-npm --version
+6. **Verify Node.js and npm:**
 
+   ```bash
+   node --version
+   npm --version
+   ```
 
-Installation completed!
+#### Option 2: APT
 
-Option 2: Install using APT
+Suitable for Ubuntu and Debian-based distributions.
 
-This method is suitable for Ubuntu and Debian-based distributions.
-
-Step 1: Update package lists
-
-bash
+```bash
 sudo apt update
-
-
-Step 2: Install Node.js and npm
-
-bash
 sudo apt install -y nodejs npm
 
-
-Step 3: Verify installation
-
-bash
 node --version
 npm --version
+```
 
-Note: APT repositories may contain an older Node.js version. For development projects requiring a specific or recent LTS version, prefer NVM.
-Windows Installation
+> **Note:** APT repositories may ship an older Node.js version. If your project requires a specific or recent LTS release, use NVM instead.
 
-There are three installation methods available.
+---
 
-Option 1: Official Installer (Recommended for Beginners)
+### Windows
 
-This is the easiest way to install Node.js on Windows.
+| Method | Best for |
+| --- | --- |
+| [Official Installer](#option-1-official-installer-recommended-for-beginners) | Beginners (**recommended**) |
+| [Winget](#option-2-winget) | Command-line installation |
+| [NVM for Windows](#option-3-nvm-for-windows) | Switching between multiple Node.js versions |
 
-Step 1: Download Node.js
+#### Option 1: Official Installer (Recommended for Beginners)
 
-Visit the official website:
+1. Visit [nodejs.org](https://nodejs.org/) and download the **LTS** installer (`.msi`) for your system architecture.
+2. Run the installer and:
+   - Accept the license agreement
+   - Choose an installation directory
+   - Keep the default options
+   - Ensure Node.js is added to the system `PATH`
+3. Open PowerShell or Command Prompt and verify:
 
-https://nodejs.org/
+   ```powershell
+   node --version
+   npm --version
+   ```
 
-Download the LTS (Long-Term Support) version for Windows.
+#### Option 2: Winget
 
-Choose the appropriate installer for your system architecture.
+Using the Windows Package Manager, run in PowerShell:
 
-Step 2: Install Node.js
-Open the downloaded .msi file.
-Accept the license agreement.
-Choose the installation directory.
-Keep the default installation options.
-Ensure Node.js is added to the system PATH.
-Complete the installation.
-Step 3: Verify installation
-
-Open PowerShell or Command Prompt:
-
-powershell
-node --version
-npm --version
-
-
-You should see the installed versions.
-
-Option 2: Install using Winget
-
-Windows Package Manager (winget) allows you to install Node.js directly from the terminal.
-
-Open PowerShell and execute:
-
-powershell
+```powershell
 winget install OpenJS.NodeJS.LTS
+```
 
+Restart your terminal, then verify:
 
-After installation, restart your terminal.
-
-Verify:
-
-powershell
+```powershell
 node --version
 npm --version
+```
 
-Option 3: Install using NVM for Windows
+#### Option 3: NVM for Windows
 
-If you need to switch between different Node.js versions, you can use NVM for Windows.
+> **Important:** [NVM for Windows](https://github.com/coreybutler/nvm-windows) is a separate project from NVM for Linux/macOS, and its commands differ slightly.
 
-Important: NVM for Windows is a separate project from the Linux/macOS version of NVM.
+1. Download the latest `nvm-setup.exe` from the [releases page](https://github.com/coreybutler/nvm-windows).
+2. Run the installer with the default settings, then open a **new** PowerShell window.
+3. Verify NVM:
 
-Step 1: Download NVM for Windows
+   ```powershell
+   nvm version
+   ```
 
-Visit:
+4. Install and activate the LTS release:
 
-https://github.com/coreybutler/nvm-windows
+   ```powershell
+   nvm install lts
+   nvm use lts
+   ```
 
-Download the latest nvm-setup.exe release.
+5. Verify Node.js and npm:
 
-Step 2: Install NVM
-Run the installer.
-Follow the installation wizard.
-Keep the default settings unless your environment requires otherwise.
-Open a new PowerShell terminal.
-Step 3: Verify NVM
-powershell
-nvm version
+   ```powershell
+   node --version
+   npm --version
+   ```
 
-Step 4: Install Node.js LTS
-powershell
-nvm install lts
+---
 
-Step 5: Activate Node.js
-powershell
-nvm use lts
+## Verify Installation
 
-Step 6: Verify installation
-powershell
+On any operating system, run:
+
+```bash
 node --version
 npm --version
+```
 
+Example output (versions will vary with your installed release):
 
-Installation completed!
-
-Verify Installation
-
-Regardless of your operating system, execute the following commands:
-
-bash
-node --version
-npm --version
-
-
-Example output (illustrative):
-
-text
+```text
 v24.x.x
 11.x.x
+```
 
+To check where Node.js is installed:
 
-The exact versions depend on the installed Node.js release.
-
-You can also check where Node.js is installed.
-
-Linux:
-
-bash
+```bash
+# Linux
 which node
 which npm
+```
 
-
-Windows PowerShell:
-
-powershell
+```powershell
+# Windows PowerShell
 where.exe node
 where.exe npm
+```
 
-Create Your First Node.js Project
+---
 
-Once Node.js and npm are installed, follow these steps to create a test project.
+## Quick Start: Your First Project
 
-Step 1: Create a project directory
-bash
-mkdir nodejs-test
-cd nodejs-test
+1. **Create a project directory:**
 
-Step 2: Initialize an npm project
-bash
-npm init -y
+   ```bash
+   mkdir nodejs-test
+   cd nodejs-test
+   ```
 
+2. **Initialize an npm project** (creates a `package.json`):
 
-This creates a package.json file containing the project configuration.
+   ```bash
+   npm init -y
+   ```
 
-Step 3: Create an index.js file
+3. **Create `index.js`:**
 
-Create a file named index.js:
+   ```javascript
+   console.log("Node.js is working correctly!");
+   ```
 
-javascript
-console.log("Node.js is working correctly!");
+4. **Run it:**
 
-Step 4: Execute the application
-bash
-node index.js
+   ```bash
+   node index.js
+   ```
 
+   Expected output:
 
-Expected output:
+   ```text
+   Node.js is working correctly!
+   ```
 
-text
-Node.js is working correctly!
+Your Node.js environment is ready. 🎉
 
+---
 
-Congratulations! Your Node.js environment is ready.
+## Working with an Existing Repository
 
-Install Project Dependencies
+1. **Clone the repository:**
 
-When working with an existing Git repository, follow these steps.
+   ```bash
+   git clone <repository-url>
+   ```
 
-Step 1: Clone the repository
-bash
-git clone <repository-url>
+2. **Navigate to the project directory:**
 
-Step 2: Navigate to the project directory
-bash
-cd <project-directory>
+   ```bash
+   cd <project-directory>
+   ```
 
-Step 3: Install dependencies
+3. **Install dependencies:**
 
-If the project contains a package-lock.json file, use:
+   ```bash
+   npm ci        # if a package-lock.json exists (recommended)
+   # or
+   npm install
+   ```
 
-bash
-npm ci
+   | Command | Behavior |
+   | --- | --- |
+   | `npm ci` | Installs exactly what the lockfile specifies. Recommended for CI and reproducible team setups. |
+   | `npm install` | Installs dependencies and may update the lockfile. |
 
+4. **Run the project.** Check the `scripts` section of `package.json`, for example:
 
-Alternatively:
+   ```json
+   {
+     "scripts": {
+       "start": "node index.js",
+       "dev": "node --watch index.js"
+     }
+   }
+   ```
 
-bash
-npm install
+   ```bash
+   npm start      # run the application
+   npm run dev    # start the development environment
+   ```
 
+   Available commands depend on each project's configuration.
 
-Difference:
+---
 
-npm ci: Installs dependencies based on the lockfile. Recommended for CI environments and reproducible team setups.
-npm install: Installs dependencies and may update the lockfile.
-Step 4: Run the project
+## Useful npm Commands
 
-Check the scripts section in package.json.
+| Command | Description |
+| --- | --- |
+| `npm init -y` | Initialize a new project |
+| `npm install` | Install project dependencies |
+| `npm ci` | Clean install from the lockfile |
+| `npm install <package>` | Install a package |
+| `npm install -D <package>` | Install a development dependency |
+| `npm uninstall <package>` | Remove a package |
+| `npm update` | Update dependencies within allowed version ranges |
+| `npm list` | Display installed packages |
+| `npm run` | List available scripts |
+| `npm start` | Execute the `start` script |
+| `npm run dev` | Execute the `dev` script |
 
-For example:
+---
 
-json
-{
-  "scripts": {
-    "start": "node index.js",
-    "dev": "node --watch index.js"
-  }
-}
+## Troubleshooting
 
+<details>
+<summary><strong>1. <code>node</code> command not found</strong></summary>
 
-Run the application:
+**Linux (NVM):** reload your shell configuration and confirm NVM is available.
 
-bash
-npm start
-
-
-Or start the development environment:
-
-bash
-npm run dev
-
-
-The available commands depend on the project configuration.
-
-Useful npm Commands
-Command	Description
-npm init -y	Initialize a new project
-npm install	Install project dependencies
-npm ci	Clean installation from lockfile
-npm install <package>	Install a package
-npm install -D <package>	Install a development dependency
-npm uninstall <package>	Remove a package
-npm update	Update dependencies within allowed version ranges
-npm list	Display installed packages
-npm run	List available scripts
-npm start	Execute the start script
-npm run dev	Execute the development script
-Troubleshooting
-1. Node.js command not found
-
-Linux:
-
-If you installed Node.js using NVM, reload your shell configuration:
-
-bash
-source ~/.bashrc
-
-
-For Zsh:
-
-bash
-source ~/.zshrc
-
-
-Check whether NVM is available:
-
-bash
+```bash
+source ~/.bashrc    # or: source ~/.zshrc
 nvm --version
+```
 
+**Windows:**
 
-Windows:
+- Restart PowerShell or Command Prompt
+- Verify Node.js is included in the system `PATH`
+- Check the installation directory
+- Restart Windows if necessary
 
-Restart PowerShell or Command Prompt.
-Verify that Node.js is included in the system PATH.
-Check the installation directory.
-Restart Windows if necessary.
-2. npm permission errors on Linux
+</details>
 
-If you installed Node.js using NVM, avoid using sudo with npm commands.
+<details>
+<summary><strong>2. npm permission errors on Linux</strong></summary>
 
-NVM installs Node.js and npm in your user directory.
+If you installed Node.js with NVM, **do not use `sudo` with npm commands**. NVM installs Node.js and npm in your user directory. Confirm your installation paths:
 
-Check your installation:
-
-bash
+```bash
 which node
 which npm
+```
 
-3. Multiple Node.js versions
+</details>
 
-If you use NVM, you can list installed versions:
+<details>
+<summary><strong>3. Managing multiple Node.js versions</strong></summary>
 
-bash
-nvm list
+**Linux/macOS (NVM):**
 
+```bash
+nvm list                 # list installed versions
+nvm install 22           # install another version
+nvm use 22               # switch versions
+nvm alias default 22     # set the default
+```
 
-Install another version:
+**Windows (NVM for Windows):**
 
-bash
-nvm install 22
-
-
-Switch versions:
-
-bash
-nvm use 22
-
-
-Set the default version:
-
-bash
-nvm alias default 22
-
-
-On Windows with NVM for Windows, the corresponding commands are:
-
-powershell
+```powershell
 nvm list
 nvm install 22
 nvm use 22
+```
 
-4. Port already in use
+</details>
 
-If your Node.js application cannot start because a port is already occupied, identify the process using that port.
+<details>
+<summary><strong>4. Port already in use</strong></summary>
 
-Linux:
+Identify the process occupying the port (replace `3000` with your application's port).
 
-bash
+```bash
+# Linux
 sudo lsof -i :3000
+```
 
-
-Windows PowerShell:
-
-powershell
+```powershell
+# Windows PowerShell
 netstat -ano | findstr :3000
+```
 
+</details>
 
-Replace 3000 with your application's port.
+---
 
-Team Development Standards
+## Team Development Standards
 
-To ensure consistency across the development team, follow these recommendations.
+To keep environments consistent across the team:
 
-1. Use the same Node.js version
+1. **Use the same Node.js major version.** All team members should run the same major release.
+2. **Prefer LTS releases** for both development and production.
+3. **Commit dependency lockfiles.** Always commit `package.json` and `package-lock.json`.
+4. **Use `npm ci`** for fresh installs and CI/CD pipelines.
+5. **Pin the Node.js version** by adding an `.nvmrc` file to the project root with the agreed version, for example:
 
-All team members should use the same Node.js major version.
+   ```text
+   24
+   ```
 
-2. Use LTS releases
+   Linux/macOS (NVM):
 
-Prefer Node.js LTS releases for development and production environments.
+   ```bash
+   nvm install
+   nvm use
+   ```
 
-3. Commit dependency lockfiles
+   Windows (NVM for Windows):
 
-Always commit these files to Git:
+   ```powershell
+   nvm install 24
+   nvm use 24
+   ```
 
-package.json
-package-lock.json
+6. **Document project scripts.** Keep clear scripts for development, testing, and production in `package.json`.
 
-This helps ensure consistent dependency installation.
+---
 
-4. Use npm ci
+## Official Resources
 
-For fresh installations and CI/CD pipelines, prefer:
+| Resource | Link |
+| --- | --- |
+| Node.js Website | https://nodejs.org/ |
+| Node.js Documentation | https://nodejs.org/docs/latest/api/ |
+| npm Documentation | https://docs.npmjs.com/ |
+| NVM (Linux/macOS) | https://github.com/nvm-sh/nvm |
+| NVM for Windows | https://github.com/coreybutler/nvm-windows |
+| Git Documentation | https://git-scm.com/doc |
 
-bash
-npm ci
+---
 
-5. Define the Node.js version
+## Contributing
 
-Add an .nvmrc file to the project root containing the agreed version.
+Contributions and suggestions are welcome! To improve this guide:
 
-For example:
+1. Fork this repository
+2. Create a new branch
+3. Make your changes
+4. Submit a Pull Request
 
-text
-24
+Please keep installation instructions in line with the official Node.js documentation.
 
+## License
 
-Linux/macOS developers using NVM can then run:
+This project is licensed under the [MIT License](LICENSE).
 
-bash
-nvm install
-nvm use
+---
 
-
-NVM for Windows users can use:
-
-powershell
-nvm install 24
-nvm use 24
-
-6. Document project scripts
-
-Make sure the project's package.json contains clear scripts for development, testing, and production.
-
-Official Resources
-Resource	Link
-Node.js Official Website	https://nodejs.org/
-Node.js Documentation	https://nodejs.org/docs/latest/api/
-npm Documentation	https://docs.npmjs.com/
-NVM (Linux/macOS)	https://github.com/nvm-sh/nvm
-NVM for Windows	https://github.com/coreybutler/nvm-windows
-Git Documentation	https://git-scm.com/doc
-Contributing
-
-Contributions and suggestions are welcome!
-
-If you find an issue or want to improve this guide:
-
-Fork this repository.
-Create a new branch.
-Make your changes.
-Submit a Pull Request.
-
-Please keep installation instructions up to date with official Node.js documentation.
-
-License
-
-This project is available under the MIT License.
-
-Maintained for developers who want a simple, consistent, and reliable Node.js development environment across Linux and Windows.
+<p align="center">
+  Maintained for developers who want a simple, consistent, and reliable Node.js environment across Linux and Windows.
+</p>
